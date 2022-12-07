@@ -1,4 +1,4 @@
-setwd("/home/penpen/Documents/Cours/HAU703I-Individu_pop/OrthoMaM")
+setwd("/home/penpen/Downloads/68/")
 library(ape)
 library(ggplot2)
 library(dplyr)
@@ -29,12 +29,12 @@ qA <- function() {
     mrcaMouse <- getMRCA(tree, c("Rattus_norvegicus", "Mus_musculus"))
 
     mrcaCommon <- getMRCA(tree, c(mrcaApe, mrcaMouse))
-    distCM <- dist.nodes(tree)[mrcaCommon, mrcaMouse]
-    distCA <- dist.nodes(tree)[mrcaCommon, mrcaApe]
-    distCh <- dist.nodes(tree)[mrcaCommon, homoIndex]
-    distCma <- dist.nodes(tree)[mrcaCommon, macacaIndex]
-    distCr <- dist.nodes(tree)[mrcaCommon, rattusIndex]
-    distCmu <- dist.nodes(tree)[mrcaCommon, musIndex]
+    distCM <- dist.nodes(tree)[mrcaCommon, mrcaMouse] / 75
+    distCA <- dist.nodes(tree)[mrcaCommon, mrcaApe] / 90
+    distCh <- dist.nodes(tree)[mrcaCommon, homoIndex] / 90
+    distCma <- dist.nodes(tree)[mrcaCommon, macacaIndex] / 90
+    distCr <- dist.nodes(tree)[mrcaCommon, rattusIndex] / 90
+    distCmu <- dist.nodes(tree)[mrcaCommon, musIndex] / 90
 
     df2 <- data.frame(
       i,
