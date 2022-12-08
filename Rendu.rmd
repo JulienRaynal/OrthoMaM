@@ -1,22 +1,162 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Projet OrthoMam"
+output: pdf_document
 ---
+Données choisies:\
+    - Catégorie / gamme: 26\
+    - %G+C3 min: 69.0\
+    - %G+C3 max: 69.9\
 
-The [R plugin](https://www.jetbrains.com/help/pycharm/r-plugin-support.html) for IntelliJ-based IDEs provides
-handy capabilities to work with the [R Markdown](https://www.jetbrains.com/help/pycharm/r-markdown.html) files.
-To [add](https://www.jetbrains.com/help/pycharm/r-markdown.html#add-code-chunk) a new R chunk,
-position the caret at any line or the code chunk, then click "+".
 
-The code chunk appears:
+Initialisation des données et librairies
 ```{r}
+setwd("/home/penpen/Documents/Cours/HAU703I-Individu_pop/OrthoMaM")
+library(ape)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
 ```
 
-Type any R code in the chunk, for example:
+## Partie 1
+### Question A
+Initialisation du dataframe contenant nos valeurs
 ```{r}
-mycars <- within (mtcars, {cyl <- ordered (cyl)})
-mycars
-```
+df <- data.frame(
+        id_tree = integer(),
+        taux_euarch_rodentia = integer(),
+        taux_euarch_primates = integer(),
+        taux_primates_homo = integer(),
+        taux_primates_macaca = integer(),
+        taux_rodentia_rattus = integer(),
+        taux_rodentia_mus = integer()
+)
 
-Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk.
-Click the **Knit and Open Document** to build and preview an output.
+i <- 0
+```
+```{r}
+qA <- function() {
+  files <- list.files(path = "./trees", pattern = "*.rootree", full.names = TRUE, recursive = FALSE)
+  lapply(files, function(x) {
+    tree <- read.tree(x)
+    homoIndex <- which(tree$tip.label == "Homo_sapiens")
+    macacaIndex <- which(tree$tip.label == "Macaca_fascicularis")
+    rattusIndex <- which(tree$tip.label == "Rattus_norvegicus")
+    musIndex <- which(tree$tip.label == "Mus_musculus")
+
+    node_primates <- getMRCA(tree, c("Homo_sapiens", "Macaca_fascicularis"))
+    node_rodentia <- getMRCA(tree, c("Rattus_norvegicus", "Mus_musculus"))
+    node_euarch <- getMRCA(tree, c(node_primates, node_rodentia))
+
+    taux_euarch_rodentia <- dist.nodes(tree)[node_euarch, node_rodentia] / 75
+    taux_euarch_primates <- dist.nodes(tree)[node_euarch, node_primates] / 60
+    taux_primates_homo <- dist.nodes(tree)[node_primates, homoIndex] / 30
+    taux_primates_macaca <- dist.nodes(tree)[node_primates, macacaIndex] / 30
+    taux_rodentia_rattus <- dist.nodes(tree)[node_rodentia, rattusIndex] / 15
+    taux_rodentia_mus <- dist.nodes(tree)[node_rodentia, musIndex] / 15
+
+    df2 <- data.frame(
+            i,
+            taux_euarch_rodentia,
+            taux_euarch_primates,
+            taux_primates_homo,
+            taux_primates_macaca,
+            taux_rodentia_rattus,
+            taux_rodentia_mus
+    )
+
+    names(df2) = c(
+            "id_tree",
+            "taux_euarch_rodentia",
+            "taux_euarch_primates",
+            "taux_primates_homo",
+            "taux_primates_macaca",
+            "taux_rodentia_rattus",
+            "taux_rodentia_mus"
+    )
+
+    df <<- rbind(df, df2)
+
+    i <<- i + 1
+  })
+}
+```
+```{r}
+# Réponse à la question A
+invisible(qA())
+summary(df[c("taux_euarch_rodentia", "taux_euarch_primates", "taux_primates_homo", "taux_primates_macaca", "taux_rodentia_rattus", "taux_rodentia_mus")])
+```
+On voit ci-dessus les valeurs descriptives des taux d'évolution de chacune des six branches.\
+Taux moyen (substitutions nucléotidiques / Millions d'années):\
+  - Euarchontoglires -> Rodentia: 2.383e-03\
+  - Euarchontoglires -> Primates: 0.0012100\
+  - Primates -> Homo: 0.0005845\
+  - Primates -> Macaca: 0.0007071\
+  - Rodentia -> Ratus: 0.0026741\
+  - Rodentia -> Mus: 0.002857\
+
+
+### Question B
+
+```{r}
+results <- data.frame(
+        name = character(),
+        taux_euarch_rodentia = integer(),
+        taux_euarch_primates = integer(),
+        taux_primates_homo = integer(),
+        taux_primates_macaca = integer(),
+        taux_rodentia_rattus = integer(),
+        taux_rodentia_mus = integer()
+)
+
+qB <- function() {
+  #question B
+  median_euarch_rodentia <- median(df$taux_euarch_rodentia)
+  median_euarch_primates <- median(df$taux_euarch_primates)
+  median_primates_homo <- median(df$taux_primates_homo)
+  median_primates_macaca <- median(df$taux_primates_macaca)
+  median_rodentia_rattus <- median(df$taux_rodentia_rattus)
+  median_rodentia_mus <- median(df$taux_rodentia_mus)
+
+  quantiles_euarch_rodentia <- quantile(df$taux_euarch_rodentia, probs = c(0.05, 0.95))
+  quantiles_euarch_primates <- quantile(df$taux_euarch_primates, probs = c(0.05, 0.95))
+  quantiles_primates_homo <- quantile(df$taux_primates_homo, probs = c(0.05, 0.95))
+  quantiles_primates_macaca <- quantile(df$taux_primates_macaca, probs = c(0.05, 0.95))
+  quantiles_rodentia_rattus <- quantile(df$taux_rodentia_rattus, probs = c(0.05, 0.95))
+  quantiles_rodentia_mus <- quantile(df$taux_rodentia_mus, probs = c(0.05, 0.95))
+
+  results[nrow(results) + 1,] <<- c("Median", median_euarch_rodentia, median_euarch_primates, median_primates_homo, median_primates_macaca, median_rodentia_rattus, median_rodentia_mus)
+  results[nrow(results) + 1,] <<- c("q5", quantiles_euarch_rodentia[[1]], quantiles_euarch_primates[[1]], quantiles_primates_homo[[1]], quantiles_primates_macaca[[1]], quantiles_rodentia_rattus[[1]], quantiles_rodentia_mus[[1]])
+  results[nrow(results) + 1,] <<- c("q95", quantiles_euarch_rodentia[[2]], quantiles_euarch_primates[[2]], quantiles_primates_homo[[2]], quantiles_primates_macaca[[2]], quantiles_rodentia_rattus[[2]], quantiles_rodentia_mus[[2]])
+
+
+  dfresults <- melt(df[c("taux_euarch_rodentia", "taux_euarch_primates", "taux_primates_homo", "taux_primates_macaca", "taux_rodentia_rattus", "taux_rodentia_mus")])
+  boxplot(dfresults$value ~ dfresults$variable)
+}
+```
+```{r}
+qB()
+head(results)
+```
+Dans le tableau ci-dessus nous pouvons voir les médianes et les quantiles à 5% et 95% de nos différents taux d'évolution des noeuds de nos arbres
+
+### Question C
+```{r}
+qC <- function() {
+  dfmelt <- melt(df[c("taux_primates_homo", "taux_rodentia_mus")])
+
+  p <- dfmelt %>%
+          ggplot(aes(x = value, fill = as.character(variable))) +
+          geom_histogram(color = "#e9ecef", alpha = 0.6, position = 'identity') +
+          labs(fill = "")
+  p
+}
+```
+```{r}
+qC()
+```
+\
+\
+On constate que pour un même nombre de taux d'évolution, le taux d'évolution de la souris est plus aléatoire que celui de l'humain.\
+En effet, chez la souris nous pouvons différents une plus grande variété de taux de mutations répartie sur une plus grande plage de valeurs.\
+Ainsi nous observons chez la souris une médiane: 0.002857 et une variance: 1.96235e-06\
+Tandis que chez l'homme nous observons un taux d'évolution plus régulier et moins réparti, avec une médiane: 0.00058 et une variance: 1.122747e-07\
