@@ -29,6 +29,7 @@ library(reshape2)
 ### Question A
 Initialisation du dataframe contenant nos valeurs
 ```{r, warning = F, message = F}
+# On crée un tableau qui va contenir toutes les distances entre les noeuds pour tous les arbres phylogénétique
 df <- data.frame(
         id_tree = integer(),
         taux_euarch_rodentia = integer(),
@@ -43,14 +44,21 @@ i <- 0
 ```
 ```{r, warning = F, message = F}
 qA <- function() {
+  # On récupérère tous les fichiers d'extension rootree dans notre dossier trees
   files <- list.files(path = "./trees", pattern = "*.rootree", full.names = TRUE, recursive = FALSE)
+  # Pour tous les fichiers récupérés on applique la fonction suivante
   lapply(files, function(x) {
+    # Lecture de l'arbre
     tree <- read.tree(x)
+    # Recherche des index de nos espèces d'intérets dans les feuilles de nos abres
+    # en utilisant la fonction which et en matchant le nom de nos espèces avec le nom des feuilles
     homoIndex <- which(tree$tip.label == "Homo_sapiens")
     macacaIndex <- which(tree$tip.label == "Macaca_fascicularis")
     rattusIndex <- which(tree$tip.label == "Rattus_norvegicus")
     musIndex <- which(tree$tip.label == "Mus_musculus")
-
+    # On récupère les ancêtres d'abord des primates et rodentia pour finalement récupérer
+    # l'ancêtre commun au deux ancêtres communs: euarchontoglires; grâce à la fonction getMRCA
+    # auquel on passe notre arbre et un vecteur avec le nom des espèces descendantes de l'ancêtre
     node_primates <- getMRCA(tree, c("Homo_sapiens", "Macaca_fascicularis"))
     node_rodentia <- getMRCA(tree, c("Rattus_norvegicus", "Mus_musculus"))
     node_euarch <- getMRCA(tree, c(node_primates, node_rodentia))
@@ -72,7 +80,7 @@ qA <- function() {
             taux_rodentia_mus
     )
 
-    names(df2) = c(
+    names(df2) <- c(
             "id_tree",
             "taux_euarch_rodentia",
             "taux_euarch_primates",
