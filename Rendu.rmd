@@ -190,6 +190,10 @@ qC <- function() {
 
    p <- dfmelt %>%
           ggplot(aes(x = value, fill = as.character(variable))) +
+           labs(title = "Taux d'évolution entre Primates et Homo ainsi que Rodentia et Mus Musculus",
+                x = "Taux de mutation",
+                y = "Nombre d'apparition du taux de mutation"
+           ) +
           geom_histogram(color = "#e9ecef", alpha = 0.6, position = 'identity') +
           labs(fill = "")
   p
