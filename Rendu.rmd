@@ -1,13 +1,9 @@
 ---
-title: "Projet OrthoMam"
-author: |
-        | BENARBIA Samia
-        | RAYNAL Julien
 output:
   pdf_document:
   latex_engine: xelatex
 header-includes:
-- \usepackage[fontsize=8pt]{scrextend}
+- \usepackage[fontsize=12pt]{scrextend}
 ---
 
 Données choisies:\
@@ -15,8 +11,10 @@ Données choisies:\
     - %G+C3 min: 69.0\
     - %G+C3 max: 69.9\
 
+## Introduction
+Dans le cadre de l'UE Analyse de données en bioinformatique (HAU703I), nous cherchons à étudier les vitesses d'évolution de séquences d'exons orthologues chez différentes espèces : Homo sapiens, Macaca fascicularis (deux primates) et Mus musculus et Rattus norvegicus (deux rongeurs). Pour cela, nous récupérerons les alignements et les arbres correspondants sur la base de données OrthoMaM afin de calculer différents taux d'évolution que nous comparerons par la suite statistiquement.\
 
-Initialisation des données et librairies
+Initialisation des données et librairies:
 ```{r, warning=FALSE,message=FALSE}
 setwd("/home/penpen/Documents/Cours/HAU703I-Individu_pop/OrthoMaM")
 library(ape)
@@ -27,9 +25,9 @@ library(reshape2)
 
 ## Partie 1
 ### Question A
-Initialisation du dataframe contenant nos valeurs
+Initialisation du dataframe contenant nos valeurs:
 ```{r, warning = F, message = F}
-# On crée un tableau qui va contenir toutes les distances entre les noeuds pour tous les arbres phylogénétique
+# On crée un tableau qui va contenir toutes les distances entre les noeuds pour tous les arbres phylogénétiques
 df <- data.frame(
         id_tree = integer(),
         taux_euarch_rodentia = integer(),
@@ -50,19 +48,21 @@ qA <- function() {
   lapply(files, function(x) {
     # Lecture de l'arbre
     tree <- read.tree(x)
-    # Recherche des index de nos espèces d'intérets dans les feuilles de nos abres
+    # Recherche des index de nos espèces d'intérêt dans les feuilles de nos abres
     # en utilisant la fonction which et en matchant le nom de nos espèces avec le nom des feuilles
     homoIndex <- which(tree$tip.label == "Homo_sapiens")
     macacaIndex <- which(tree$tip.label == "Macaca_fascicularis")
     rattusIndex <- which(tree$tip.label == "Rattus_norvegicus")
     musIndex <- which(tree$tip.label == "Mus_musculus")
-    # On récupère les ancêtres d'abord des primates et rodentia pour finalement récupérer
-    # l'ancêtre commun au deux ancêtres communs: euarchontoglires; grâce à la fonction getMRCA
-    # auquel on passe notre arbre et un vecteur avec le nom des espèces descendantes de l'ancêtre
+    # On récupère les ancêtres d'abord des Primates (humain et macaque) et Rodentia (souris et rat) pour finalement
+    # récupérer l'ancêtre commun aux deux ancêtres communs, Euarchontoglires, grâce à la fonction getMRCA
+    # à laquelle on passe notre arbre et un vecteur avec le nom des espèces descendantes de l'ancêtre
     node_primates <- getMRCA(tree, c("Homo_sapiens", "Macaca_fascicularis"))
     node_rodentia <- getMRCA(tree, c("Rattus_norvegicus", "Mus_musculus"))
     node_euarch <- getMRCA(tree, c(node_primates, node_rodentia))
 
+    # Enfin, on peut calculer le taux d'évolution en calculant la taille de branche grâce aux ancêtres
+    # communs précédemment récupérés et en la divisant par le temps écoulé entre chaque points de l'arbre
     taux_euarch_rodentia <- dist.nodes(tree)[node_euarch, node_rodentia] / 75
     taux_euarch_primates <- dist.nodes(tree)[node_euarch, node_primates] / 60
     taux_primates_homo <- dist.nodes(tree)[node_primates, homoIndex] / 30
@@ -70,6 +70,7 @@ qA <- function() {
     taux_rodentia_rattus <- dist.nodes(tree)[node_rodentia, rattusIndex] / 15
     taux_rodentia_mus <- dist.nodes(tree)[node_rodentia, musIndex] / 15
 
+    # On remplit notre tableau ligne par ligne
     df2 <- data.frame(
             i,
             taux_euarch_rodentia,
@@ -104,7 +105,7 @@ pander::pander(summary(df[c("taux_euarch_rodentia", "taux_euarch_primates",
                             "taux_rodentia_rattus", "taux_rodentia_mus")]))
 ```
 On voit ci-dessus les valeurs descriptives des taux d'évolution de chacune des six branches.\
-Taux moyen (substitutions nucléotidiques / Millions d'années):\
+Taux moyen (substitutions nucléotidiques/Millions d'années):\
   - Euarchontoglires -> Rodentia: 2.383e-03\
   - Euarchontoglires -> Primates: 0.0012100\
   - Primates -> Homo: 0.0005845\
@@ -116,6 +117,8 @@ Taux moyen (substitutions nucléotidiques / Millions d'années):\
 ### Question B
 
 ```{r, warning = F, message = F}
+# On crée un tableau qui va contenir nos résultats (les taux d'évolution
+# et pour chacun sa médiane et ses quantiles à 5% et 95%)
 results <- data.frame(
         name = character(),
         taux_euarch_rodentia = integer(),
@@ -128,6 +131,8 @@ results <- data.frame(
 
 qB <- function() {
   #question B
+
+  # Calcul des médianes
   median_euarch_rodentia <- median(df$taux_euarch_rodentia)
   median_euarch_primates <- median(df$taux_euarch_primates)
   median_primates_homo <- median(df$taux_primates_homo)
@@ -135,6 +140,7 @@ qB <- function() {
   median_rodentia_rattus <- median(df$taux_rodentia_rattus)
   median_rodentia_mus <- median(df$taux_rodentia_mus)
 
+  # Calcul des quantiles
   quantiles_euarch_rodentia <- quantile(df$taux_euarch_rodentia, probs = c(0.05, 0.95))
   quantiles_euarch_primates <- quantile(df$taux_euarch_primates, probs = c(0.05, 0.95))
   quantiles_primates_homo <- quantile(df$taux_primates_homo, probs = c(0.05, 0.95))
@@ -142,6 +148,7 @@ qB <- function() {
   quantiles_rodentia_rattus <- quantile(df$taux_rodentia_rattus, probs = c(0.05, 0.95))
   quantiles_rodentia_mus <- quantile(df$taux_rodentia_mus, probs = c(0.05, 0.95))
 
+  # Remplissage du tableau avec les résultats
   results[nrow(results) + 1,] <<- c("Median", median_euarch_rodentia, median_euarch_primates,
                                     median_primates_homo, median_primates_macaca,
                                     median_rodentia_rattus, median_rodentia_mus)
@@ -164,9 +171,10 @@ qB <- function() {
     r
   }
 
+  # Création des box-plots pour les quantiles à 5% et 95%
   ggplot(dfresults, aes(x=variable, y=value)) +
-          labs(title = "Répartition médiane et quartile 5% + 95%\n",
-               x = "espèces impliqués",
+          labs(title = "Répartitions médianes et quantiles à 5% et 95%\n",
+               x = "Espèces impliquées",
                y = "Taux d'évolution"
           ) +
           guides(fill=F) +
@@ -181,10 +189,17 @@ resultsToDisplay <- results[,-1]
 rownames(resultsToDisplay) <- results[,1]
 pander::pander(resultsToDisplay)
 ```
-Dans le tableau ci-dessus nous pouvons voir les médianes et les quantiles à 5% et 95% de nos différents taux d'évolution des noeuds de nos arbres
+Dans le tableau ci-dessus nous pouvons voir les médianes et les quantiles à 5% et 95% de nos différents taux d'évolution des noeuds de nos arbres.\
+\
+On remarque que l'humain et le macaque ont des taux d'évolution similaires, de même pour la souris et le rat. En effet, l'humain et le macaque ainsi que la souris et le rat sont (deux à deux) les plus proches phylogénétiquement dans les différents arbres. Ils ont alors des quantités d'évolution similaires. On remarque de plus que ces deux paires d'espèces ont des taux d'évolution très différents entre elles. Les Rongeurs ont des taux d'évolution répartis sur une plus grande plage de valeurs que les Primates. En outre, les Rongeurs ont des taux d'évolution plus élevés que ceux des Primates.\
+\
+Nous allons maintenant nous intéresser de plus près aux taux d'évolution des humains et des souris.\
+\
 
 ### Question C
 ```{r, warning = F, message = F}
+# Création de l'histogramme montrant la distribution des taux d'évolution
+# pour l'humain et pour la souris pour l'ensemble des exons
 qC <- function() {
   dfmelt <- melt(df[c("taux_primates_homo", "taux_rodentia_mus")])
 
@@ -204,9 +219,9 @@ qC()
 ```
 \
 \
-On constate que pour un même nombre de taux d'évolution, le taux d'évolution de la souris est plus aléatoire que celui de l'humain.\
+On constate chez la souris une plus grande variété de valeurs de taux d'évolution réparties sur une gamme de valeurs plus étendue que chez l'humain. Ainsi nous observons chez la souris une médiane égale à 0.002857 et une variance égale à 1.96235e-06.\
 \
-En effet, chez la souris nous pouvons différents une plus grande variété de taux de mutations répartie sur une plus grande plage de valeurs.\
-Ainsi nous observons chez la souris une médiane: 0.002857 et une variance: 1.96235e-06\
+Tandis que chez l'humain nous observons des taux d'évolution plus réguliers et répartis sur une gamme de valeurs plus réduite que chez la souris, avec une médiane égale à 0.00058 et une variance égale à 1.122747e-07.\
 \
-Tandis que chez l'homme nous observons un taux d'évolution plus régulier et moins réparti, avec une médiane: 0.00058 et une variance: 1.122747e-07\
+On en tire que le taux d'évolution des souris est beaucoup plus variable que celui de l'humain. On peut ainsi supposer qu'il y a eu plus de substitutions nucléotidiques sur plusieurs périodes de temps de durées variables chez la souris tandis que chez l'humain il y a eu un nombre plus constant de substitutions nucléotidiques sur des périodes de temps d'une durée presque similaire. Cela laisse à penser que le génome humain est plus stable que le génome de la souris.\
+\
