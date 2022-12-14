@@ -29,7 +29,8 @@ library(reshape2)
 ### Question A
 Initialisation du dataframe contenant nos valeurs:
 ```{r, warning = F, message = F}
-# On crée un tableau qui va contenir toutes les distances entre les noeuds pour tous les arbres phylogénétiques
+# On crée un tableau qui va contenir toutes les distances entre
+# les noeuds pour tous les arbres phylogénétiques
 df <- data.frame(
         id_tree = integer(),
         taux_euarch_rodentia = integer(),
@@ -44,20 +45,24 @@ i <- 0
 ```
 ```{r, warning = F, message = F}
 qA <- function() {
-  # On récupérère tous les fichiers d'extension rootree dans notre dossier trees
-  files <- list.files(path = "./trees", pattern = "*.rootree", full.names = TRUE, recursive = FALSE)
+  # On récupérère tous les fichiers d'extension
+  # rootree dans notre dossier trees
+  files <- list.files(path = "./trees", pattern = "*.rootree",
+                      full.names = TRUE, recursive = FALSE)
   # Pour tous les fichiers récupérés on applique la fonction suivante
   lapply(files, function(x) {
     # Lecture de l'arbre
     tree <- read.tree(x)
-    # Recherche des index de nos espèces d'intérêt dans les feuilles de nos abres
-    # en utilisant la fonction which et en matchant le nom de nos espèces avec le nom des feuilles
+    # Recherche des index de nos espèces d'intérêt
+    # dans les feuilles de nos abres en utilisant la fonction
+    # which et en matchant le nom de nos espèces avec le nom des feuilles
     homoIndex <- which(tree$tip.label == "Homo_sapiens")
     macacaIndex <- which(tree$tip.label == "Macaca_fascicularis")
     rattusIndex <- which(tree$tip.label == "Rattus_norvegicus")
     musIndex <- which(tree$tip.label == "Mus_musculus")
-    # On récupère les ancêtres d'abord des Primates (humain et macaque) et Rodentia (souris et rat) pour finalement
-    # récupérer l'ancêtre commun aux deux ancêtres communs, Euarchontoglires, grâce à la fonction getMRCA
+    # On récupère les ancêtres d'abord des Primates (humain et macaque) et
+    # Rodentia (souris et rat) pour finalement récupérer l'ancêtre commun aux
+    # deux ancêtres communs, Euarchontoglires, grâce à la fonction getMRCA
     # à laquelle on passe notre arbre et un vecteur avec le nom des espèces descendantes de l'ancêtre
     node_primates <- getMRCA(tree, c("Homo_sapiens", "Macaca_fascicularis"))
     node_rodentia <- getMRCA(tree, c("Rattus_norvegicus", "Mus_musculus"))
@@ -143,23 +148,32 @@ qB <- function() {
   median_rodentia_mus <- median(df$taux_rodentia_mus)
 
   # Calcul des quantiles
-  quantiles_euarch_rodentia <- quantile(df$taux_euarch_rodentia, probs = c(0.05, 0.95))
-  quantiles_euarch_primates <- quantile(df$taux_euarch_primates, probs = c(0.05, 0.95))
-  quantiles_primates_homo <- quantile(df$taux_primates_homo, probs = c(0.05, 0.95))
-  quantiles_primates_macaca <- quantile(df$taux_primates_macaca, probs = c(0.05, 0.95))
-  quantiles_rodentia_rattus <- quantile(df$taux_rodentia_rattus, probs = c(0.05, 0.95))
-  quantiles_rodentia_mus <- quantile(df$taux_rodentia_mus, probs = c(0.05, 0.95))
+  quantiles_euarch_rodentia <- quantile(df$taux_euarch_rodentia,
+                                        probs = c(0.05, 0.95))
+  quantiles_euarch_primates <- quantile(df$taux_euarch_primates,
+                                        probs = c(0.05, 0.95))
+  quantiles_primates_homo <- quantile(df$taux_primates_homo,
+                                      probs = c(0.05, 0.95))
+  quantiles_primates_macaca <- quantile(df$taux_primates_macaca,
+                                        probs = c(0.05, 0.95))
+  quantiles_rodentia_rattus <- quantile(df$taux_rodentia_rattus,
+                                        probs = c(0.05, 0.95))
+  quantiles_rodentia_mus <- quantile(df$taux_rodentia_mus,
+                                     probs = c(0.05, 0.95))
 
   # Remplissage du tableau avec les résultats
-  results[nrow(results) + 1,] <<- c("Median", median_euarch_rodentia, median_euarch_primates,
-                                    median_primates_homo, median_primates_macaca,
-                                    median_rodentia_rattus, median_rodentia_mus)
-  results[nrow(results) + 1,] <<- c("q5", quantiles_euarch_rodentia[[1]], quantiles_euarch_primates[[1]],
-                                    quantiles_primates_homo[[1]], quantiles_primates_macaca[[1]],
-                                    quantiles_rodentia_rattus[[1]], quantiles_rodentia_mus[[1]])
-  results[nrow(results) + 1,] <<- c("q95", quantiles_euarch_rodentia[[2]], quantiles_euarch_primates[[2]],
-                                    quantiles_primates_homo[[2]], quantiles_primates_macaca[[2]],
-                                    quantiles_rodentia_rattus[[2]], quantiles_rodentia_mus[[2]])
+  results[nrow(results) + 1,] <<- c(
+          "Median", median_euarch_rodentia, median_euarch_primates,
+          median_primates_homo, median_primates_macaca,
+          median_rodentia_rattus, median_rodentia_mus)
+  results[nrow(results) + 1,] <<- c(
+          "q5", quantiles_euarch_rodentia[[1]], quantiles_euarch_primates[[1]],
+          quantiles_primates_homo[[1]], quantiles_primates_macaca[[1]],
+          quantiles_rodentia_rattus[[1]], quantiles_rodentia_mus[[1]])
+  results[nrow(results) + 1,] <<- c(
+          "q95", quantiles_euarch_rodentia[[2]], quantiles_euarch_primates[[2]],
+          quantiles_primates_homo[[2]], quantiles_primates_macaca[[2]],
+          quantiles_rodentia_rattus[[2]], quantiles_rodentia_mus[[2]])
 
 
   dfresults <- melt(df[c("taux_euarch_rodentia", "taux_euarch_primates",
@@ -174,6 +188,8 @@ qB <- function() {
   }
 
   # Création des box-plots pour les quantiles à 5% et 95%
+  # où les limites représentent les quantile 5% et 95%
+  # tandis que les quartiles restent inchangés
   ggplot(dfresults, aes(x=variable, y=value)) +
           labs(title = "Répartitions médianes et quantiles à 5% et 95%\n",
                x = "Espèces impliquées",
