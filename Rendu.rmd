@@ -182,7 +182,7 @@ qB <- function() {
 
 
   quantiles_95 <- function(x) {
-    r <- quantile(x, probs=c(0.05, 0.25, 0.5, 0.75, 0.95))
+    r <- quantile(x, probs=c(0.00, 0.05, 0.5, 0.95, 1))
     names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
     r
   }
@@ -236,10 +236,13 @@ qC <- function() {
 qC()
 ```
 \
-\
+### Question D
 On constate chez la souris une plus grande variété de valeurs de taux d'évolution réparties sur une gamme de valeurs plus étendue que chez l'humain. Ainsi nous observons chez la souris une médiane égale à 0.002857 et une variance égale à 1.96235e-06.\
 \
 Tandis que chez l'humain nous observons des taux d'évolution plus réguliers et répartis sur une gamme de valeurs plus réduite que chez la souris, avec une médiane égale à 0.00058 et une variance égale à 1.122747e-07.\
 \
 On en tire que le taux d'évolution des souris est beaucoup plus variable que celui de l'humain. On peut ainsi supposer qu'il y a eu plus de substitutions nucléotidiques sur plusieurs périodes de temps de durées variables chez la souris tandis que chez l'humain il y a eu un nombre plus constant de substitutions nucléotidiques sur des périodes de temps d'une durée presque similaire. Cela laisse à penser que le génome humain est plus stable que le génome de la souris.\
 \
+
+
+### Question E
